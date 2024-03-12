@@ -1,0 +1,27 @@
+{
+    "name": "ycpfzf/hspay",
+    "type": "library",
+    "license": "MIT",
+    "description": "火速付支付扩展包",
+    "keywords": [
+        "火速付",
+        "易宝支付",
+        "yeepay"
+    ],
+    "autoload": {
+        "psr-4": {
+            "Ycpfzf\\Hspay\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "fzf",
+            "email": "ysfzf@hotmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.0",
+        "ext-openssl": "*",
+        "ext-json": "*"
+    }
+}
