@@ -35,12 +35,17 @@ class Client
         $data=$this->decrypt(base64_decode($req));
         return json_decode($data,true);
     }
-
-    static public function generateKey($bit,$path)
-    {
+    static public function generateKeyFile($bit,$path){
         if(!is_dir($path)){
             mkdir($path,0777,true);
         }
+        list($publicKey,$privateKey)=self::generateKey($bit);
+        file_put_contents($path.'/private.pem',$privateKey);
+        file_put_contents($path.'/pubice.pem',$publicKey);
+    }
+
+    static public function generateKey($bit)
+    {
         $res = openssl_pkey_new([
             'private_key_bits' => $bit,
             'digest_alg' => 'sha256'
@@ -53,11 +58,9 @@ class Client
         // 获取公钥和私钥
         if (openssl_pkey_export($res, $privateKey)) {
             $details = openssl_pkey_get_details($res);
-
             if ($details && isset($details['key'])) {
                 $publicKey = $details['key'];
-                file_put_contents($path.'/private.pem',$privateKey);
-                file_put_contents($path.'/pubice.pem',$publicKey);
+                return [$privateKey, $publicKey];
             } else {
                 throw new \Exception('获取私钥信息失败');
             }
