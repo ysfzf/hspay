@@ -31,6 +31,11 @@ class Client
         return $this->request('/v1/order',$order);
     }
 
+    public function notify($req){
+        $data=$this->decrypt(base64_decode($req));
+        return json_decode($data,true);
+    }
+
     static public function generateKey($bit,$path)
     {
         if(!is_dir($path)){
@@ -64,6 +69,15 @@ class Client
     protected function getSignStr($jsonStr, $url, $tm){
         $signStr = sprintf("%s\n%s\n%s\n%s\n%s", $url, $this->appkey, $tm, $this->appsecret, $jsonStr);
         return  base64_encode($signStr);
+    }
+
+    protected function decrypt($data){
+        $privKeyId = openssl_pkey_get_private($this->privateKey);
+        $decrypted='';
+        if ($privKeyId) {
+            openssl_private_decrypt($data, $decrypted, $privKeyId);
+        }
+        return $decrypted;
     }
 
     protected function sign($jsonStr,$url,$tm){
