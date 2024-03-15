@@ -19,21 +19,42 @@ class Client
         $this->hsPublicKey=$hsPublicKey;
     }
 
+    //聚合支付
     public function pay($order){
         return $this->request('/v1/pay',$order);
     }
 
+    //聚合码支付链接
+    public function payLink($order){
+        return $this->request('/v1/pay_link',$order);
+    }
+
+    //付款码支付
+    public function codePay($order){
+        return $this->request('/v1/code_pay',$order);
+    }
+
+    //退款
     public function refund($order){
         return $this->request('/v1/refund',$order);
     }
 
+    //订单详情
     public function query($order){
         return $this->request('/v1/order',$order);
     }
 
-    public function notify($req){
-        $data=$this->decrypt(base64_decode($req));
-        return json_decode($data,true);
+    // 支付通知
+    public function notify($req,$reqTime,$reqSign){
+        $result= json_decode(base64_decode($req),true);
+        $result['check']=0;
+        if($this->hsPublicKey && $reqTime && $reqSign){
+            $signStr = sprintf("%s\n%s\n%s\n%s",  $this->appkey, $reqTime, $this->appsecret, $req);
+            $signStr=base64_encode($signStr);
+            $publicKey=openssl_pkey_get_public($this->hsPublicKey);
+            $result['check']=openssl_verify($signStr,base64_decode($reqSign),  $publicKey, OPENSSL_ALGO_SHA256);
+        }
+        return $result;
     }
     static public function generateKeyFile($bit,$path){
         if(!is_dir($path)){
@@ -75,6 +96,9 @@ class Client
     }
 
     protected function decrypt($data){
+        if(!$this->privateKey){
+            return $data;
+        }
         $privKeyId = openssl_pkey_get_private($this->privateKey);
         $decrypted='';
         if ($privKeyId) {
