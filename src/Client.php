@@ -45,7 +45,13 @@ class Client
     }
 
     // 支付通知
-    public function notify($req,$reqTime,$reqSign){
+    public function notify(){
+        $req=$_POST['Req']??'';
+        if(!$req){
+            return null;
+        }
+        $reqTime=$_SERVER['HTTP_X_HSP_TIMESTAMP']??'';
+        $reqSign=$_SERVER['HTTP_X_HSP_SIGN']??'';
         $result= json_decode(base64_decode($req),true);
         $result['check']=0;
         if($this->hsPublicKey && $reqTime && $reqSign){
